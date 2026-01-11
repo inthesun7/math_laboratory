@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>단위원과 삼각함수 그래프</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1400px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+        .canvas-wrapper {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .canvas-container {
+            position: relative;
+        }
+        canvas {
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: crosshair;
+            background: #fafafa;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .info-item {
+            display: inline-block;
+            margin: 0 15px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .sin { color: #e74c3c; }
+        .cos { color: #3498db; }
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: none;
+            border-radius: 5px;
+            background: #667eea;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>단위원과 삼각함수 그래프</h1>
+        <div class="canvas-wrapper">
+            <div class="canvas-container">
+                <canvas id="unitCircle" width="400" height="400"></canvas>
+            </div>
+            <div class="canvas-container">
+                <canvas id="trigGraph" width="600" height="400"></canvas>
+            </div>
+        </div>
+        <div class="info">
+            <div class="info-item">각도: <span id="angle">0°</span></div>
+            <div class="info-item">라디안: <span id="radian">0.00</span></div>
+            <div class="info-item sin">sin(θ) = <span id="sinValue">0.00</span></div>
+            <div class="info-item cos">cos(θ) = <span id="cosValue">1.00</span></div>
+        </div>
+        <div class="controls">
+            <button onclick="clearGraph()">그래프 초기화</button>
+            <button onclick="animateCircle()">자동 회전</button>
+        </div>
+    </div>
+
+    <script>
+        const circleCanvas = document.getElementById('unitCircle');
+        const graphCanvas = document.getElementById('trigGraph');
+        const circleCtx = circleCanvas.getContext('2d');
+        const graphCtx = graphCanvas.getContext('2d');
+
+        let points = [];
+        let isAnimating = false;
+        let animationAngle = 0;
+
+        function drawUnitCircle(angle = 0) {
+            const w = circleCanvas.width;
+            const h = circleCanvas.height;
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const scale = 80;
+
+            circleCtx.clearRect(0, 0, w, h);
+
+            // 격자 그리기
+            circleCtx.strokeStyle = '#e0e0e0';
+            circleCtx.lineWidth = 1;
+            for (let i = -2; i <= 2; i++) {
+                circleCtx.beginPath();
+                circleCtx.moveTo(centerX + i * scale, 0);
+                circleCtx.lineTo(centerX + i * scale, h);
+                circleCtx.stroke();
+                
+                circleCtx.beginPath();
+                circleCtx.moveTo(0, centerY + i * scale);
+                circleCtx.lineTo(w, centerY + i * scale);
+                circleCtx.stroke();
+            }
+
+            // 축 그리기
+            circleCtx.strokeStyle = '#333';
+            circleCtx.lineWidth = 2;
+            circleCtx.beginPath();
+            circleCtx.moveTo(0, centerY);
+            circleCtx.lineTo(w, centerY);
+            circleCtx.moveTo(centerX, 0);
+            circleCtx.lineTo(centerX, h);
+            circleCtx.stroke();
+
+            // 단위원 그리기
+            circleCtx.strokeStyle = '#666';
+            circleCtx.lineWidth = 2;
+            circleCtx.beginPath();
+            circleCtx.arc(centerX, centerY, scale, 0, Math.PI * 2);
+            circleCtx.stroke();
+
+            // 각도 표시 (부채꼴)
+            if (angle !== 0) {
+                circleCtx.fillStyle = 'rgba(102, 126, 234, 0.2)';
+                circleCtx.beginPath();
+                circleCtx.moveTo(centerX, centerY);
+                circleCtx.arc(centerX, centerY, scale, 0, -angle, true);
+                circleCtx.closePath();
+                circleCtx.fill();
+            }
+
+            // 반지름 선
+            const x = Math.cos(angle) * scale;
+            const y = -Math.sin(angle) * scale;
+            
+            circleCtx.strokeStyle = '#764ba2';
+            circleCtx.lineWidth = 2;
+            circleCtx.beginPath();
+            circleCtx.moveTo(centerX, centerY);
+            circleCtx.lineTo(centerX + x, centerY + y);
+            circleCtx.stroke();
+
+            // sin, cos 선 그리기
+            circleCtx.strokeStyle = '#e74c3c';
+            circleCtx.lineWidth = 2;
+            circleCtx.setLineDash([5, 5]);
+            circleCtx.beginPath();
+            circleCtx.moveTo(centerX + x, centerY + y);
+            circleCtx.lineTo(centerX + x, centerY);
+            circleCtx.stroke();
+
+            circleCtx.strokeStyle = '#3498db';
+            circleCtx.beginPath();
+            circleCtx.moveTo(centerX + x, centerY + y);
+            circleCtx.lineTo(centerX, centerY + y);
+            circleCtx.stroke();
+            circleCtx.setLineDash([]);
+
+            // 점 그리기
+            circleCtx.fillStyle = '#764ba2';
+            circleCtx.beginPath();
+            circleCtx.arc(centerX + x, centerY + y, 6, 0, Math.PI * 2);
+            circleCtx.fill();
+
+            // 원점 표시
+            circleCtx.fillStyle = '#333';
+            circleCtx.beginPath();
+            circleCtx.arc(centerX, centerY, 4, 0, Math.PI * 2);
+            circleCtx.fill();
+            circleCtx.font = '14px Arial';
+            circleCtx.fillText('O', centerX + 8, centerY - 8);
+
+            // 축 이름 및 레이블
+            circleCtx.fillText('x', w - 20, centerY - 10);
+            circleCtx.fillText('y', centerX + 10, 20);
+            circleCtx.fillText('1', centerX + scale + 5, centerY - 5);
+            circleCtx.fillText('-1', centerX - scale - 20, centerY - 5);
+            circleCtx.fillText('1', centerX + 5, centerY - scale - 5);
+            circleCtx.fillText('-1', centerX + 5, centerY + scale + 15);
+        }
+
+        function drawTrigGraph() {
+            const w = graphCanvas.width;
+            const h = graphCanvas.height;
+            const centerY = h / 2;
+            const scaleX = 80;
+            const scaleY = 80;
+
+            graphCtx.clearRect(0, 0, w, h);
+
+            // 격자 그리기
+            graphCtx.strokeStyle = '#e0e0e0';
+            graphCtx.lineWidth = 1;
+            for (let i = 0; i <= Math.PI * 2; i += Math.PI / 4) {
+                const x = i * scaleX;
+                graphCtx.beginPath();
+                graphCtx.moveTo(x, 0);
+                graphCtx.lineTo(x, h);
+                graphCtx.stroke();
+            }
+            for (let i = -1; i <= 1; i += 0.5) {
+                const y = centerY - i * scaleY;
+                graphCtx.beginPath();
+                graphCtx.moveTo(0, y);
+                graphCtx.lineTo(w, y);
+                graphCtx.stroke();
+            }
+
+            // 축 그리기
+            graphCtx.strokeStyle = '#333';
+            graphCtx.lineWidth = 2;
+            graphCtx.beginPath();
+            graphCtx.moveTo(0, centerY);
+            graphCtx.lineTo(w, centerY);
+            graphCtx.stroke();
+
+            // 축 레이블 (분수 형태로 π 표시)
+            graphCtx.fillStyle = '#333';
+            graphCtx.font = '14px Arial';
+            
+            // θ 축 이름
+            graphCtx.fillText('θ', w - 20, centerY + 20);
+            
+            // x축 레이블 (아래에 위치)
+            graphCtx.fillText('0', 5, centerY + 20);
+            
+            // π/2 분수 표시
+            graphCtx.font = '12px Arial';
+            graphCtx.fillText('π', Math.PI/2 * scaleX - 4, centerY + 15);
+            graphCtx.beginPath();
+            graphCtx.moveTo(Math.PI/2 * scaleX - 8, centerY + 17);
+            graphCtx.lineTo(Math.PI/2 * scaleX + 8, centerY + 17);
+            graphCtx.stroke();
+            graphCtx.fillText('2', Math.PI/2 * scaleX - 3, centerY + 28);
+            
+            // π
+            graphCtx.font = '14px Arial';
+            graphCtx.fillText('π', Math.PI * scaleX - 5, centerY + 20);
+            
+            // 3π/2 분수 표시
+            graphCtx.font = '12px Arial';
+            graphCtx.fillText('3π', 3*Math.PI/2 * scaleX - 8, centerY + 15);
+            graphCtx.beginPath();
+            graphCtx.moveTo(3*Math.PI/2 * scaleX - 12, centerY + 17);
+            graphCtx.lineTo(3*Math.PI/2 * scaleX + 12, centerY + 17);
+            graphCtx.stroke();
+            graphCtx.fillText('2', 3*Math.PI/2 * scaleX - 3, centerY + 28);
+            
+            // 2π
+            graphCtx.font = '14px Arial';
+            graphCtx.fillText('2π', 2*Math.PI * scaleX - 10, centerY + 20);
+            
+            // y축 레이블
+            graphCtx.fillText('1', 5, centerY - scaleY - 5);
+            graphCtx.fillText('-1', 5, centerY + scaleY + 15);
+
+            // sin, cos 그래프 그리기
+            if (points.length > 0) {
+                // cos 그래프
+                graphCtx.strokeStyle = '#3498db';
+                graphCtx.lineWidth = 2;
+                graphCtx.beginPath();
+                graphCtx.moveTo(0, centerY - points[0].cos * scaleY);
+                for (let i = 1; i < points.length; i++) {
+                    const x = points[i].angle * scaleX;
+                    const y = centerY - points[i].cos * scaleY;
+                    graphCtx.lineTo(x, y);
+                }
+                graphCtx.stroke();
+
+                // sin 그래프
+                graphCtx.strokeStyle = '#e74c3c';
+                graphCtx.lineWidth = 2;
+                graphCtx.beginPath();
+                graphCtx.moveTo(0, centerY - points[0].sin * scaleY);
+                for (let i = 1; i < points.length; i++) {
+                    const x = points[i].angle * scaleX;
+                    const y = centerY - points[i].sin * scaleY;
+                    graphCtx.lineTo(x, y);
+                }
+                graphCtx.stroke();
+
+                // 마지막 점 표시
+                const last = points[points.length - 1];
+                const lastX = last.angle * scaleX;
+                
+                graphCtx.fillStyle = '#e74c3c';
+                graphCtx.beginPath();
+                graphCtx.arc(lastX, centerY - last.sin * scaleY, 4, 0, Math.PI * 2);
+                graphCtx.fill();
+
+                graphCtx.fillStyle = '#3498db';
+                graphCtx.beginPath();
+                graphCtx.arc(lastX, centerY - last.cos * scaleY, 4, 0, Math.PI * 2);
+                graphCtx.fill();
+            }
+        }
+
+        function updateInfo(angle) {
+            const degrees = (angle * 180 / Math.PI).toFixed(1);
+            const radian = angle.toFixed(2);
+            const sinVal = Math.sin(angle).toFixed(2);
+            const cosVal = Math.cos(angle).toFixed(2);
+
+            document.getElementById('angle').textContent = degrees + '°';
+            document.getElementById('radian').textContent = radian;
+            document.getElementById('sinValue').textContent = sinVal;
+            document.getElementById('cosValue').textContent = cosVal;
+        }
+
+        circleCanvas.addEventListener('click', (e) => {
+            const rect = circleCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left - circleCanvas.width / 2;
+            const y = e.clientY - rect.top - circleCanvas.height / 2;
+            
+            let angle = Math.atan2(-y, x);
+            if (angle < 0) angle += Math.PI * 2;
+
+            points.push({
+                angle: angle,
+                sin: Math.sin(angle),
+                cos: Math.cos(angle)
+            });
+
+            points.sort((a, b) => a.angle - b.angle);
+
+            drawUnitCircle(angle);
+            drawTrigGraph();
+            updateInfo(angle);
+        });
+
+        function clearGraph() {
+            points = [];
+            drawUnitCircle(0);
+            drawTrigGraph();
+            updateInfo(0);
+        }
+
+        function animateCircle() {
+            if (isAnimating) {
+                isAnimating = false;
+                return;
+            }
+
+            isAnimating = true;
+            points = [];
+            animationAngle = 0;
+
+            function animate() {
+                if (!isAnimating) return;
+
+                animationAngle += 0.05;
+                if (animationAngle > Math.PI * 2) {
+                    animationAngle = 0;
+                    points = [];
+                }
+
+                points.push({
+                    angle: animationAngle,
+                    sin: Math.sin(animationAngle),
+                    cos: Math.cos(animationAngle)
+                });
+
+                drawUnitCircle(animationAngle);
+                drawTrigGraph();
+                updateInfo(animationAngle);
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+        }
+
+        // 초기 그리기
+        drawUnitCircle(0);
+        drawTrigGraph();
+        updateInfo(0);
+    </script>
+</body>
+</html>
