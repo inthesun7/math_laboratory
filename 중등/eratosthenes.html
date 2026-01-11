@@ -1,1 +1,130 @@
+import React, { useState } from 'react';
 
+export default function SieveOfEratosthenes() {
+  const [crossed, setCrossed] = useState(new Set());
+  const [selected, setSelected] = useState(new Set());
+  const [wrong, setWrong] = useState(new Set());
+
+  const isPrime = (num) => {
+    if (num < 2) return false;
+    for (let i = 2; i <= Math.sqrt(num); i++) {
+      if (num % i === 0) return false;
+    }
+    return true;
+  };
+
+  const handleClick = (num) => {
+    if (crossed.has(num)) return;
+
+    // 빨간색(잘못 선택한 수)을 다시 클릭하면 원래대로
+    if (wrong.has(num)) {
+      const newWrong = new Set(wrong);
+      newWrong.delete(num);
+      setWrong(newWrong);
+      return;
+    }
+
+    if (num === 1) {
+      setCrossed(new Set([...crossed, 1]));
+      return;
+    }
+
+    // 소수인지 확인
+    if (isPrime(num)) {
+      const newSelected = new Set(selected);
+      newSelected.add(num);
+      setSelected(newSelected);
+      
+      // 배수를 순서대로 찾기
+      const multiples = [];
+      for (let i = num * 2; i <= 100; i += num) {
+        multiples.push(i);
+      }
+      
+      // 배수를 순서대로 비활성화
+      multiples.forEach((multiple, index) => {
+        setTimeout(() => {
+          setCrossed(prev => new Set([...prev, multiple]));
+        }, index * 100);
+      });
+    } else {
+      // 소수가 아닌 수를 선택한 경우
+      const newWrong = new Set(wrong);
+      newWrong.add(num);
+      setWrong(newWrong);
+    }
+  };
+
+  const reset = () => {
+    setCrossed(new Set());
+    setSelected(new Set());
+    setWrong(new Set());
+  };
+
+  const getButtonStyle = (num) => {
+    if (crossed.has(num)) {
+      return 'bg-gray-700 text-gray-500 cursor-not-allowed';
+    }
+    if (wrong.has(num)) {
+      return 'bg-red-500 text-white font-bold';
+    }
+    if (selected.has(num)) {
+      return 'bg-blue-500 text-white font-bold';
+    }
+    return 'bg-white hover:bg-blue-100 text-gray-800 cursor-pointer border-gray-300';
+  };
+
+  const primeCount = Array.from({ length: 100 }, (_, i) => i + 1)
+    .filter(n => n !== 1 && !crossed.has(n)).length;
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">에라토스테네스의 체</h1>
+          <p className="text-gray-600 mb-4">
+            소수를 찾아보세요! 숫자를 클릭하면 그 수의 배수가 모두 제거됩니다.
+          </p>
+          
+          <div className="flex gap-4 mb-4">
+            <button
+              onClick={reset}
+              className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
+            >
+              초기화
+            </button>
+          </div>
+
+          <div className="grid grid-cols-10 gap-2">
+            {Array.from({ length: 100 }, (_, i) => i + 1).map((num) => (
+              <button
+                key={num}
+                onClick={() => handleClick(num)}
+                className={`
+                  w-full aspect-square rounded-lg border-2 
+                  transition-all duration-200 text-lg font-medium
+                  ${getButtonStyle(num)}
+                `}
+                disabled={crossed.has(num)}
+              >
+                {num}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+            <h3 className="font-semibold text-gray-800 mb-2">사용 방법:</h3>
+            <ul className="text-sm text-gray-700 space-y-1">
+              <li>• 1을 클릭하면 비활성화됩니다 (소수가 아님)</li>
+              <li>• 2부터 시작해서 차례대로 클릭해보세요</li>
+              <li>• 소수를 제대로 선택하면 파란색으로 표시됩니다</li>
+              <li>• 소수가 아닌 수를 선택하면 빨간색으로 표시됩니다</li>
+              <li>• 배수들이 작은 수부터 순서대로 비활성화됩니다</li>
+              <li>• 마지막에 남은 수들이 모두 소수입니다!</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
