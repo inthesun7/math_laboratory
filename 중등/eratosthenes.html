@@ -23,6 +23,28 @@
             margin: 0 auto;
         }
 
+        .back-button-container {
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-back {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-back:hover {
+            background: #4b5563;
+        }
+
         .card {
             background: white;
             border-radius: 12px;
@@ -42,39 +64,6 @@
             margin-bottom: 24px;
         }
 
-        .button-container {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 32px;
-        }
-
-        .btn {
-            padding: 10px 24px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-reset {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-reset:hover {
-            background: #dc2626;
-        }
-
-        .btn-back {
-            background: #6b7280;
-            color: white;
-        }
-
-        .btn-back:hover {
-            background: #4b5563;
-        }
-
         .content-wrapper {
             display: flex;
             gap: 32px;
@@ -82,8 +71,8 @@
         }
 
         .info-box {
-            flex: 0 0 300px;
-            padding: 20px;
+            flex: 0 0 380px;
+            padding: 24px;
             background: #dbeafe;
             border-radius: 8px;
         }
@@ -97,17 +86,37 @@
 
         .info-box ul {
             list-style: none;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #374151;
-            line-height: 1.6;
+            line-height: 1.8;
         }
 
         .info-box li {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .grid-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grid-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 12px;
+        }
+
+        .btn-reset {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #dc2626;
         }
 
         .grid-wrapper {
-            flex: 1;
             display: flex;
             justify-content: center;
         }
@@ -189,19 +198,22 @@
             .card {
                 padding: 20px;
             }
+
+            .info-box {
+                flex: 0 0 auto;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="back-button-container">
+            <button class="btn btn-back" onclick="goBack()">← 목록으로</button>
+        </div>
+
         <div class="card">
             <h1>에라토스테네스의 체</h1>
             <p class="description">소수를 찾아보세요! 숫자를 클릭하면 그 수의 배수가 모두 제거됩니다.</p>
-            
-            <div class="button-container">
-                <button class="btn btn-reset" onclick="reset()">초기화</button>
-                <button class="btn btn-back" onclick="goBack()">목록으로</button>
-            </div>
 
             <div class="content-wrapper">
                 <div class="info-box">
@@ -217,8 +229,13 @@
                     </ul>
                 </div>
 
-                <div class="grid-wrapper">
-                    <div class="grid" id="grid"></div>
+                <div class="grid-section">
+                    <div class="grid-header">
+                        <button class="btn btn-reset" onclick="reset()">초기화</button>
+                    </div>
+                    <div class="grid-wrapper">
+                        <div class="grid" id="grid"></div>
+                    </div>
                 </div>
             </div>
         </div>
