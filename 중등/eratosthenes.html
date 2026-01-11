@@ -4,127 +4,283 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>에라토스테네스의 체</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body>
-    <div id="root"></div>
-    
-    <script type="module">
-        import React, { useState } from 'https://cdn.skypack.dev/react';
-        import ReactDOM from 'https://cdn.skypack.dev/react-dom';
-
-        function SieveOfEratosthenes() {
-            const [crossed, setCrossed] = useState(new Set());
-            const [selected, setSelected] = useState(new Set());
-            const [wrong, setWrong] = useState(new Set());
-
-            const isPrime = (num) => {
-                if (num < 2) return false;
-                for (let i = 2; i <= Math.sqrt(num); i++) {
-                    if (num % i === 0) return false;
-                }
-                return true;
-            };
-
-            const handleClick = (num) => {
-                if (crossed.has(num)) return;
-
-                // 빨간색(잘못 선택한 수)을 다시 클릭하면 원래대로
-                if (wrong.has(num)) {
-                    const newWrong = new Set(wrong);
-                    newWrong.delete(num);
-                    setWrong(newWrong);
-                    return;
-                }
-
-                if (num === 1) {
-                    setCrossed(new Set([...crossed, 1]));
-                    return;
-                }
-
-                // 소수인지 확인
-                if (isPrime(num)) {
-                    const newSelected = new Set(selected);
-                    newSelected.add(num);
-                    setSelected(newSelected);
-                    
-                    // 배수를 순서대로 찾기
-                    const multiples = [];
-                    for (let i = num * 2; i <= 100; i += num) {
-                        multiples.push(i);
-                    }
-                    
-                    // 배수를 순서대로 비활성화
-                    multiples.forEach((multiple, index) => {
-                        setTimeout(() => {
-                            setCrossed(prev => new Set([...prev, multiple]));
-                        }, index * 100);
-                    });
-                } else {
-                    // 소수가 아닌 수를 선택한 경우
-                    const newWrong = new Set(wrong);
-                    newWrong.add(num);
-                    setWrong(newWrong);
-                }
-            };
-
-            const reset = () => {
-                setCrossed(new Set());
-                setSelected(new Set());
-                setWrong(new Set());
-            };
-
-            const getButtonStyle = (num) => {
-                if (crossed.has(num)) {
-                    return 'bg-gray-700 text-gray-500 cursor-not-allowed';
-                }
-                if (wrong.has(num)) {
-                    return 'bg-red-500 text-white font-bold';
-                }
-                if (selected.has(num)) {
-                    return 'bg-blue-500 text-white font-bold';
-                }
-                return 'bg-white hover:bg-blue-100 text-gray-800 cursor-pointer border-gray-300';
-            };
-
-            return React.createElement('div', { className: 'min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8' },
-                React.createElement('div', { className: 'max-w-4xl mx-auto' },
-                    React.createElement('div', { className: 'bg-white rounded-lg shadow-lg p-6 mb-6' },
-                        React.createElement('h1', { className: 'text-3xl font-bold text-gray-800 mb-2' }, '에라토스테네스의 체'),
-                        React.createElement('p', { className: 'text-gray-600 mb-4' }, '소수를 찾아보세요! 숫자를 클릭하면 그 수의 배수가 모두 제거됩니다.'),
-                        React.createElement('div', { className: 'flex gap-4 mb-4' },
-                            React.createElement('button', {
-                                onClick: reset,
-                                className: 'px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors'
-                            }, '초기화')
-                        ),
-                        React.createElement('div', { className: 'grid grid-cols-10 gap-2' },
-                            Array.from({ length: 100 }, (_, i) => i + 1).map((num) =>
-                                React.createElement('button', {
-                                    key: num,
-                                    onClick: () => handleClick(num),
-                                    className: `w-full aspect-square rounded-lg border-2 transition-all duration-200 text-lg font-medium ${getButtonStyle(num)}`,
-                                    disabled: crossed.has(num)
-                                }, num)
-                            )
-                        ),
-                        React.createElement('div', { className: 'mt-6 p-4 bg-blue-50 rounded-lg' },
-                            React.createElement('h3', { className: 'font-semibold text-gray-800 mb-2' }, '사용 방법:'),
-                            React.createElement('ul', { className: 'text-sm text-gray-700 space-y-1' },
-                                React.createElement('li', null, '• 1을 클릭하면 비활성화됩니다 (소수가 아님)'),
-                                React.createElement('li', null, '• 2부터 시작해서 차례대로 클릭해보세요'),
-                                React.createElement('li', null, '• 소수를 제대로 선택하면 파란색으로 표시됩니다'),
-                                React.createElement('li', null, '• 소수가 아닌 수를 선택하면 빨간색으로 표시됩니다'),
-                                React.createElement('li', null, '• 배수들이 작은 수부터 순서대로 비활성화됩니다'),
-                                React.createElement('li', null, '• 마지막에 남은 수들이 모두 소수입니다!')
-                            )
-                        )
-                    )
-                )
-            );
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        ReactDOM.render(React.createElement(SieveOfEratosthenes), document.getElementById('root'));
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(to bottom right, #dbeafe, #c7d2fe);
+            min-height: 100vh;
+            padding: 32px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 2em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .description {
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reset {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #dc2626;
+        }
+
+        .btn-back {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-back:hover {
+            background: #4b5563;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+        }
+
+        .number-btn {
+            aspect-ratio: 1;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1.125rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            color: #1f2937;
+        }
+
+        .number-btn:not(:disabled):hover {
+            background: #dbeafe;
+        }
+
+        .number-btn.crossed {
+            background: #374151;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .number-btn.prime {
+            background: #3b82f6;
+            color: white;
+            font-weight: 700;
+        }
+
+        .number-btn.wrong {
+            background: #ef4444;
+            color: white;
+            font-weight: 700;
+        }
+
+        .info-box {
+            margin-top: 24px;
+            padding: 16px;
+            background: #dbeafe;
+            border-radius: 8px;
+        }
+
+        .info-box h3 {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .info-box ul {
+            list-style: none;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+
+        .info-box li {
+            margin-bottom: 4px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .grid {
+                gap: 4px;
+            }
+
+            .number-btn {
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>에라토스테네스의 체</h1>
+            <p class="description">소수를 찾아보세요! 숫자를 클릭하면 그 수의 배수가 모두 제거됩니다.</p>
+            
+            <div class="button-container">
+                <button class="btn btn-reset" onclick="reset()">초기화</button>
+                <button class="btn btn-back" onclick="goBack()">목록으로</button>
+            </div>
+
+            <div class="grid" id="grid"></div>
+
+            <div class="info-box">
+                <h3>사용 방법:</h3>
+                <ul>
+                    <li>• 1을 클릭하면 비활성화됩니다 (소수가 아님)</li>
+                    <li>• 2부터 시작해서 차례대로 클릭해보세요</li>
+                    <li>• 소수를 제대로 선택하면 파란색으로 표시됩니다</li>
+                    <li>• 소수가 아닌 수를 선택하면 빨간색으로 표시됩니다</li>
+                    <li>• 빨간색 수를 다시 클릭하면 원래대로 돌아갑니다</li>
+                    <li>• 배수들이 작은 수부터 순서대로 비활성화됩니다</li>
+                    <li>• 마지막에 남은 수들이 모두 소수입니다!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let crossed = new Set();
+        let selected = new Set();
+        let wrong = new Set();
+
+        function isPrime(num) {
+            if (num < 2) return false;
+            for (let i = 2; i <= Math.sqrt(num); i++) {
+                if (num % i === 0) return false;
+            }
+            return true;
+        }
+
+        function createGrid() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            
+            for (let i = 1; i <= 100; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'number-btn';
+                btn.textContent = i;
+                btn.onclick = () => handleClick(i);
+                btn.id = `btn-${i}`;
+                grid.appendChild(btn);
+            }
+        }
+
+        function updateButton(num) {
+            const btn = document.getElementById(`btn-${num}`);
+            btn.className = 'number-btn';
+            
+            if (crossed.has(num)) {
+                btn.classList.add('crossed');
+                btn.disabled = true;
+            } else if (wrong.has(num)) {
+                btn.classList.add('wrong');
+            } else if (selected.has(num)) {
+                btn.classList.add('prime');
+            }
+        }
+
+        function handleClick(num) {
+            if (crossed.has(num)) return;
+
+            // 빨간색(잘못 선택한 수)을 다시 클릭하면 원래대로
+            if (wrong.has(num)) {
+                wrong.delete(num);
+                updateButton(num);
+                return;
+            }
+
+            if (num === 1) {
+                crossed.add(1);
+                updateButton(1);
+                return;
+            }
+
+            // 소수인지 확인
+            if (isPrime(num)) {
+                selected.add(num);
+                updateButton(num);
+                
+                // 배수를 순서대로 찾기
+                const multiples = [];
+                for (let i = num * 2; i <= 100; i += num) {
+                    multiples.push(i);
+                }
+                
+                // 배수를 순서대로 비활성화
+                multiples.forEach((multiple, index) => {
+                    setTimeout(() => {
+                        crossed.add(multiple);
+                        updateButton(multiple);
+                    }, index * 100);
+                });
+            } else {
+                // 소수가 아닌 수를 선택한 경우
+                wrong.add(num);
+                updateButton(num);
+            }
+        }
+
+        function reset() {
+            crossed.clear();
+            selected.clear();
+            wrong.clear();
+            createGrid();
+        }
+
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // 초기화
+        createGrid();
     </script>
 </body>
 </html>
