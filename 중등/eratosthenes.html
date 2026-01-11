@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
@@ -27,8 +27,7 @@
             background: white;
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 24px;
-            margin-bottom: 24px;
+            padding: 32px;
         }
 
         h1 {
@@ -40,13 +39,13 @@
 
         .description {
             color: #6b7280;
-            margin-bottom: 16px;
+            margin-bottom: 24px;
         }
 
         .button-container {
             display: flex;
             gap: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 32px;
         }
 
         .btn {
@@ -76,17 +75,56 @@
             background: #4b5563;
         }
 
+        .content-wrapper {
+            display: flex;
+            gap: 32px;
+            align-items: flex-start;
+        }
+
+        .info-box {
+            flex: 0 0 300px;
+            padding: 20px;
+            background: #dbeafe;
+            border-radius: 8px;
+        }
+
+        .info-box h3 {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .info-box ul {
+            list-style: none;
+            font-size: 0.9rem;
+            color: #374151;
+            line-height: 1.6;
+        }
+
+        .info-box li {
+            margin-bottom: 8px;
+        }
+
+        .grid-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
         .grid {
             display: grid;
             grid-template-columns: repeat(10, 1fr);
-            gap: 8px;
+            gap: 6px;
+            max-width: 600px;
+            width: 100%;
         }
 
         .number-btn {
             aspect-ratio: 1;
             border: 2px solid #d1d5db;
             border-radius: 8px;
-            font-size: 1.125rem;
+            font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
@@ -116,27 +154,19 @@
             font-weight: 700;
         }
 
-        .info-box {
-            margin-top: 24px;
-            padding: 16px;
-            background: #dbeafe;
-            border-radius: 8px;
-        }
+        @media (max-width: 1200px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
 
-        .info-box h3 {
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 8px;
-        }
+            .info-box {
+                flex: 1;
+                width: 100%;
+            }
 
-        .info-box ul {
-            list-style: none;
-            font-size: 0.875rem;
-            color: #374151;
-        }
-
-        .info-box li {
-            margin-bottom: 4px;
+            .grid {
+                max-width: 100%;
+            }
         }
 
         @media (max-width: 768px) {
@@ -155,6 +185,10 @@
             .number-btn {
                 font-size: 0.875rem;
             }
+
+            .card {
+                padding: 20px;
+            }
         }
     </style>
 </head>
@@ -169,19 +203,23 @@
                 <button class="btn btn-back" onclick="goBack()">목록으로</button>
             </div>
 
-            <div class="grid" id="grid"></div>
+            <div class="content-wrapper">
+                <div class="info-box">
+                    <h3>사용 방법:</h3>
+                    <ul>
+                        <li>• 1을 클릭하면 비활성화됩니다 (소수가 아님)</li>
+                        <li>• 2부터 시작해서 차례대로 클릭해보세요</li>
+                        <li>• 소수를 제대로 선택하면 파란색으로 표시됩니다</li>
+                        <li>• 소수가 아닌 수를 선택하면 빨간색으로 표시됩니다</li>
+                        <li>• 빨간색 수를 다시 클릭하면 원래대로 돌아갑니다</li>
+                        <li>• 배수들이 작은 수부터 순서대로 비활성화됩니다</li>
+                        <li>• 마지막에 남은 수들이 모두 소수입니다!</li>
+                    </ul>
+                </div>
 
-            <div class="info-box">
-                <h3>사용 방법:</h3>
-                <ul>
-                    <li>• 1을 클릭하면 비활성화됩니다 (소수가 아님)</li>
-                    <li>• 2부터 시작해서 차례대로 클릭해보세요</li>
-                    <li>• 소수를 제대로 선택하면 파란색으로 표시됩니다</li>
-                    <li>• 소수가 아닌 수를 선택하면 빨간색으로 표시됩니다</li>
-                    <li>• 빨간색 수를 다시 클릭하면 원래대로 돌아갑니다</li>
-                    <li>• 배수들이 작은 수부터 순서대로 비활성화됩니다</li>
-                    <li>• 마지막에 남은 수들이 모두 소수입니다!</li>
-                </ul>
+                <div class="grid-wrapper">
+                    <div class="grid" id="grid"></div>
+                </div>
             </div>
         </div>
     </div>
